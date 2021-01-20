@@ -10,10 +10,10 @@ function love.conf(t)
 		t.audio.mic = true                  -- Request and use microphone capabilities in Android (boolean)
 		t.audio.mixwithsystem = true        -- Keep background music playing when opening LOVE (boolean, iOS and Android only)
 	end
-	
+
 	t.window.icon = nil                 -- Filepath to an image to use as the window's icon (string)
-	t.window.width = 900                -- The window w	idth (number)
-	t.window.height = 868               -- The window height (number)
+	t.window.width = 16*25                -- The window w	idth (number)
+	t.window.height = 32*25               -- The window height (number)
 	t.window.borderless = false         -- Remove all border visuals from the window (boolean)
 	t.window.resizable = true           -- Let the window be user-resizable (boolean)
 	t.window.minwidth = 350             -- Minimum window width if the window is resizable (number)
