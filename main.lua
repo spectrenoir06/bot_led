@@ -5,7 +5,11 @@ require("color")
 local channel = "bot_ioodyme"
 local nick = "spectrenoir06_bot"
 local oauth = ""
-local shuffle = false
+local shuffle = true
+local matrix_w = 16
+local matrix_h = 32
+local filter = "nearest"
+
 
 local x, y = 0, 0
 local next_send = 2;
@@ -14,9 +18,7 @@ local to_send = {}
 
 function love.load(arg)
 	print(arg, arg[1])
-	s = irc.new{
-		nick = nick
-	}
+	s = irc.new{nick = nick}
 
 	s:hook("OnChat",
 		function(user, channel, message)
@@ -36,12 +38,19 @@ function love.load(arg)
 	s:sendChat("#"..channel, "bonsoir @"..channel)
 
 	if arg[1] then
-		img_data = love.image.newImageData(arg[1])
-		img = love.graphics.newImage(img_data)
-		img:setFilter("nearest")
+		local img = love.graphics.newImage(arg[1])
+		img:setFilter(filter)
+		canvas = love.graphics.newCanvas(matrix_w, matrix_h)
+		canvas:renderTo(function()
+			local kx, ky = matrix_w / img:getWidth(), matrix_h / img:getHeight()
+			love.graphics.draw(img, 0, 0, 0, kx, ky)
+		end)
+
+		img_data = canvas:newImageData()
+		canvas:setFilter("nearest")
 	
-		for y=0, 31 do
-			for x=0, 15 do
+		for y=0, matrix_h-1 do
+			for x=0, matrix_w-1 do
 				local r, g, b = img_data:getPixel(x, y)
 				print_pixel(x, y, r, g, b, 1)
 			end
@@ -58,9 +67,9 @@ function love.load(arg)
 end
 
 function love.draw()
-	if (img) then
+	if (canvas) then
 		love.graphics.setColor(1,1,1)
-		love.graphics.draw(img, 0,0, 0, 25, 25)
+		love.graphics.draw(canvas, 0,0, 0, 25, 25)
 		love.graphics.setColor(1,0,0)
 		love.graphics.rectangle("line", x*25, y*25, 25, 25)
 	end
@@ -87,8 +96,8 @@ function love.update(dt)
 	timer = timer + dt
 
 	if timer > next_send and #to_send > 0 then
-		-- print("send")
 		s:sendChat("#"..channel, to_send[#to_send].cmd)
+		print(#to_send)
 		print(to_send[#to_send].cmd)
 		x = to_send[#to_send].x
 		y = to_send[#to_send].y
