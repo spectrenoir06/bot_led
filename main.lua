@@ -3,8 +3,18 @@ require "irc"
 require("color")
 
 local channel = "bot_ioodyme"
-local nick = "spectrenoir06_bot"
-local oauth = ""
+
+local bot = {
+	{
+		nick = "spectrenoir06_bot",
+		oauth = "?"
+	},
+	{
+		nick = "spectrenoir06",
+		oauth = "?"
+	},
+}
+
 local shuffle = true
 local matrix_w = 16
 local matrix_h = 32
@@ -18,24 +28,29 @@ local to_send = {}
 
 function love.load(arg)
 	print(arg, arg[1])
-	s = irc.new{nick = nick}
 
-	s:hook("OnChat",
-		function(user, channel, message)
-			print(("[%s] %s: %s"):format(channel, user.nick, message))
-		end
-	)
+	for k,v in ipairs(bot) do
+		v.irc = irc.new{nick = v.nick}
+
 		
-	s:connect({
-		host = "irc.chat.twitch.tv",
-		password = "oauth:"..oauth,
-	}, 6667)
-	print("connect")
-
-	s:join("#"..channel)
-	s:think()
-
-	s:sendChat("#"..channel, "bonsoir @"..channel)
+		-- s:hook("OnChat",
+		-- 	function(user, channel, message)
+		-- 		print(("[%s] %s: %s"):format(channel, user.nick, message))
+		-- 	end
+		-- )
+		
+		
+		v.irc:connect({
+			host = "irc.chat.twitch.tv",
+			password = "oauth:"..v.oauth,
+		}, 6667)
+		print("connect")
+		
+		v.irc:join("#"..channel)
+		v.irc:think()
+		
+		v.irc:sendChat("#"..channel, "bonsoir @"..channel)
+	end
 
 	if arg[1] then
 		local img = love.graphics.newImage(arg[1])
@@ -96,13 +111,17 @@ function love.update(dt)
 	timer = timer + dt
 
 	if timer > next_send and #to_send > 0 then
-		s:sendChat("#"..channel, to_send[#to_send].cmd)
-		print(#to_send)
-		print(to_send[#to_send].cmd)
-		x = to_send[#to_send].x
-		y = to_send[#to_send].y
-		table.remove(to_send, #to_send)
+		for k,v in ipairs(bot) do
+			v.irc:sendChat("#"..channel, to_send[#to_send].cmd)
+			print(#to_send)
+			print(to_send[#to_send].cmd)
+			x = to_send[#to_send].x
+			y = to_send[#to_send].y
+			table.remove(to_send, #to_send)
+		end
 		next_send = timer + 1.7
 	end
-	s:think()
+	for k,v in ipairs(bot) do
+		v.irc:think()
+	end
 end
